@@ -76,7 +76,7 @@ class User(AbstractUser):
             'Unselect this instead of deleting accounts.'
         )
     )
-    type = models.CharField(verbose_name='Тип пользователя', choicer=USER_TYPE_CHOICES, max_length=5, default='buyer')
+    type = models.CharField(verbose_name='Тип пользователя', choices=USER_TYPE_CHOICES, max_length=5, default='buyer')
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -119,7 +119,7 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField(max_lenght=80, verbose_name='Название')
+    name = models.CharField(max_length=80, verbose_name='Название')
     category = models.ForeignKey(Category, verbose_name='Категория', related_name='products', blank=True,
                                  on_delete=models.CASCADE)
 
@@ -187,7 +187,7 @@ class Contact(models.Model):
     house = models.CharField(max_length=15, verbose_name='Дом', blank=True)
     structure = models.CharField(max_length=15, verbose_name='Корпус', blank=True)
     building = models.CharField(max_length=15, verbose_name='Строение', blank=True)
-    apartment = models.CharField(max_length=15, verbose_name='Квартира', blamk=True)
+    apartment = models.CharField(max_length=15, verbose_name='Квартира', blank=True)
     phone = models.CharField(max_length=20, verbose_name='Телефон')
 
     class Meta:
@@ -205,7 +205,7 @@ class Order(models.Model):
     dt = models.DateTimeField(auto_now_add=True)
     state = models.CharField(max_length=15, verbose_name='Статус', choices=STATE_CHOICES)
     contact = models.ForeignKey(Contact, verbose_name='Контакт',
-                                blamk=True, null=True,
+                                blank=True, null=True,
                                 on_delete=models.CASCADE)
 
     class Meta:
