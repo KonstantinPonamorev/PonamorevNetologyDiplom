@@ -3,10 +3,12 @@ from django.core.validators import URLValidator
 from django.http import JsonResponse
 from requests import get
 from django.shortcuts import render
+from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
 
-from backend.models import Shop, Category, ProductInfo, Product, Parameter, ProductParameter
+from backend.models import Shop, Category, ProductInfo, Product, Parameter, ProductParameter, User
+from backend.serializers import UserSerializer
 
 
 class PartnerUpdate(APIView):
@@ -49,3 +51,5 @@ class PartnerUpdate(APIView):
                                                         value=value)
                 return JsonResponse({'Status': True})
         return JsonResponse({'Status': False, "Errors": 'Не указаны необходимые аргументы'})
+
+
