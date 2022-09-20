@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import JsonResponse
@@ -53,6 +54,35 @@ class PartnerUpdate(APIView):
                                                         value=value)
                 return JsonResponse({'Status': True})
         return JsonResponse({'Status': False, "Errors": 'Не указаны необходимые аргументы'})
+
+
+class RegisterAccount(APIView):
+
+    def post(self, request, *args, **kwargs):
+        if {'first_name', 'lat_name', 'email', 'company', 'position'}.issubset(request.data):
+            errors = {}
+            try:
+                validate_password(request.data['password'])
+            except Exception as password_er:
+                error_array = []
+                for item in password_er:
+                    error_array.append(item)
+                return JsonResponse({'Status': False, 'Errors': error_array})
+            else:
+                request.data._mutable = True
+                request.data.update({})
+                user_serializer = UserSerializer(data=request.data)
+                if user_serializer.is_valid():
+                    user = user_serializer.save()
+                    user.set_password(request.data['password'])
+                    user.save()
+
+                    # new_user_registered.send
+
+                    return JsonResponse({'Status': True})
+                else:
+                    return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
+        return JsonResponse({'Status': False, 'Errors': 'Не указаны аргументы'})
 
 
 class LoginAccount(APIView):
