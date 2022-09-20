@@ -42,11 +42,14 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True')
+        if extra_fields.get('is_active') is not True:
+            raise ValueError('Superuser must have is_active=True')
 
         return self._create_user(email, password, **extra_fields)
 
@@ -70,7 +73,7 @@ class User(AbstractUser):
     )
     is_active = models.BooleanField(
         _('active'),
-        default=False,
+        default=True,
         help_text=_(
             'Designates whether this user should be treated as active. '
             'Unselect this instead of deleting accounts.'
@@ -94,7 +97,7 @@ class Shop(models.Model):
                                 blank=True, null=True,
                                 on_delete=models.CASCADE)
     state = models.BooleanField(verbose_name='Статус получения заказов', default=True)
-    filename = models.FilePathField(verbose_name='Файл для импорта')
+    # filename = models.FilePathField(verbose_name='Файл для импорта')
 
     class Meta:
         verbose_name = 'Магазин'
@@ -140,7 +143,8 @@ class ProductInfo(models.Model):
     shop = models.ForeignKey(Shop, verbose_name='Магазин', related_name='product_infos', blank=True,
                              on_delete=models.CASCADE)
     price = models.PositiveIntegerField(verbose_name='Цена')
-    price_rrc = models.PositiveIntegerField(verbose_name='РРЦ')
+    quantity = models.PositiveIntegerField(verbose_name='Количество')
+    price_rrc = models.IntegerField(verbose_name='РРЦ', null=True)
 
     class Meta:
         verbose_name = 'Информация о продукте'
