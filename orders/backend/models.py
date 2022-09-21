@@ -212,6 +212,7 @@ class Order(models.Model):
                                 blank=True, null=True,
                                 on_delete=models.CASCADE)
 
+
     class Meta:
         verbose_name = 'Заказ'
         verbose_name_plural = 'Список заказов'
