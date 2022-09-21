@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Q
 from django.http import JsonResponse
 from requests import get
 from django.shortcuts import render
@@ -15,7 +15,8 @@ from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
 
 from backend.models import Shop, Category, ProductInfo, Product, Parameter, ProductParameter, User, Order
-from backend.serializers import UserSerializer, ShopSerializer, OrderSerializer
+from backend.serializers import UserSerializer, ShopSerializer, OrderSerializer, CategorySerializer, \
+    ProductInfoSerializer
 from backend.signals import new_user_registered
 
 
@@ -137,7 +138,41 @@ class RegisterAccount(APIView):
 # class ConfirmAccount(APIView)
 
 
+class AccountDetails(APIView):
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
+
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
+
+        if 'password' in request.data:
+            errors = {}
+            try:
+                validate_password(request.data['password'])
+            except Exception as password_error:
+                error_array = []
+                for item in password_error:
+                    error_array.append(item)
+                return JsonResponse({'Status': False, 'Errors': {'password': error_array}})
+            else:
+                request.user.set_password(request.data['password'])
+
+        user_serializer = UserSerializer(request.user, data=request.data, partial=True)
+        if user_serializer.is_valid():
+            user_serializer.save()
+            return JsonResponse({'Status': True})
+        else:
+            return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
+
+
 class LoginAccount(APIView):
+
     def post(self, request, *args, **kwargs):
         if {'email', 'password'}.issubset(request.data):
             user = authenticate(request, username=request.data['email'], password=request.data['password'])
@@ -147,5 +182,38 @@ class LoginAccount(APIView):
                     return JsonResponse({'Status': True, 'Token': token.key})
                 return JsonResponse({'Status': False, 'Errors': 'Can"t authenticate'})
             return JsonResponse({'Status': False, 'Errors': 'Need more uthenticate arguments'})
+
+
+class CategoryView(ListAPIView):
+
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class ShopView(ListAPIView):
+
+    queryset = Shop.objects.filter(state=True)
+    serializer_class = ShopSerializer
+
+
+class ProductInfoView(APIView):
+
+    def get(self, request, *args, **kwargs):
+
+        query = Q(shop__state=True)
+        shop_id = request.query_params.get('shop_id')
+        category_id = request.query_params.get('category_id')
+
+        if shop_id:
+            query = query & Q(shop_id=shop_id)
+        if category_id:
+            query = query & Q(product__category_id=category_id)
+
+        queryset = ProductInfo.objects.filter(query).select_related(
+            'shop', 'product__category').prefetch_related('product_parameters__parameter').distinct()
+
+        serializer = ProductInfoSerializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 
