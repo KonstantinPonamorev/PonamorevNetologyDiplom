@@ -75,6 +75,10 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderItemCreateSerializer(serializers.ModelSerializer):
     product_info = ProductInfoSerializer(read_only=True)
 
+    class Meta:
+        model = OrderItem
+        fields = ("__all__")
+
 
 class OrderSerializer(serializers.ModelSerializer):
     ordered_items = OrderItemCreateSerializer(read_only=True, many=True)
