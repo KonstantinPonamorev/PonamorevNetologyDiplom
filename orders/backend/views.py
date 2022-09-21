@@ -17,10 +17,10 @@ from yaml import load as load_yaml, Loader
 from ujson import loads as load_json
 
 from backend.models import Shop, Category, ProductInfo, Product, Parameter, ProductParameter, User, Order, OrderItem, \
-    Contact
+    Contact, ConfirmEmailToken
 from backend.serializers import UserSerializer, ShopSerializer, OrderSerializer, CategorySerializer, \
     ProductInfoSerializer, OrderItemSerializer, ContactSerializer
-from backend.signals import new_user_registered
+from backend.signals import new_user_registered, new_order
 
 
 class PartnerUpdate(APIView):
@@ -138,7 +138,21 @@ class RegisterAccount(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны аргументы'})
 
 
-# class ConfirmAccount(APIView)
+class ConfirmAccount(APIView):
+    def post(self, request, *args, **kwargs):
+        if {'email', 'token'}.issubset(request.data):
+            token = ConfirmEmailToken.objects.filter(user__email=request.data['email'],
+                                                     key=request.data['token']).first()
+
+            if token:
+                token.user.is_active = True
+                token.user.save()
+                token.delete()
+                return JsonResponse({'Status': True})
+            else:
+                return JsonResponse({'Status': False, 'Error': 'Wrong token or email'})
+
+        return JsonResponse({'Status': False, 'Error': 'enter token and email'})
 
 
 class AccountDetails(APIView):
@@ -395,9 +409,7 @@ class OrderView(APIView):
                     return JsonResponse({'Status': False, 'Error': 'Wrong arguments'})
                 else:
                     if is_updated:
-
-                        # new_order.send()
-
+                        new_order.send(sender=self.__class__, user_id=request.user.id)
                         return JsonResponse({'Status': True})
 
         return JsonResponse({'Status': 'Укажите все аргументы'})
