@@ -136,13 +136,7 @@ AUTH_USER_MODEL = 'backend.User'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 
-EMAIL_HOST = 'smtp.mail.ru'
-EMAIL_HOST_USER = 'ponamorevnetologydiplom@mail.ru'
-EMAIL_HOST_PASSWORD = 'ZgKWHUqBuawnUVfrLCa4'
-EMAIL_PORT = 2525
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-# SERVER_EMAIL = EMAIL_HOST_USER
+
 
 
 REST_FRAMEWORK = {
