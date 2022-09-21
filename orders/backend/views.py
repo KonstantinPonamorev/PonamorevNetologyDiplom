@@ -1,17 +1,22 @@
+from distutils.util import strtobool
+
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
+from django.db.models import Sum, F
 from django.http import JsonResponse
 from requests import get
 from django.shortcuts import render
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
 
-from backend.models import Shop, Category, ProductInfo, Product, Parameter, ProductParameter, User
-from backend.serializers import UserSerializer
+from backend.models import Shop, Category, ProductInfo, Product, Parameter, ProductParameter, User, Order
+from backend.serializers import UserSerializer, ShopSerializer, OrderSerializer
+from backend.signals import new_user_registered
 
 
 class PartnerUpdate(APIView):
@@ -56,10 +61,56 @@ class PartnerUpdate(APIView):
         return JsonResponse({'Status': False, "Errors": 'Не указаны необходимые аргументы'})
 
 
+class PartnerState(APIView):
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
+        if request.user.type != 'shop':
+            return JsonResponse({'Status': False, 'Error': 'For shops only'}, status=403)
+
+        shop = request.user.shop
+        serializer = ShopSerializer(shop)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
+        if request.user.type != 'shop':
+            return JsonResponse({'Status': False, 'Error': 'For shops only'}, status=403)
+
+        state = request.data.get('state')
+        if state:
+            try:
+                Shop.objects.filter(user_id=request.user.id).update(state=strtobool(state))
+                return JsonResponse({'Status': True, 'State': state})
+            except ValueError as error:
+                return JsonResponse({'Status': False, 'Errors': str(error)})
+        return JsonResponse({'Status': False, 'Error': 'Need new state'})
+
+
+class PartnerOrders(APIView):
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
+        if request.user.type != 'shop':
+            return JsonResponse({'Status': False, 'Error': 'For shops only'}, status=403)
+
+        order = Order.objects.filter(
+            ordered_items__product_info__shop__user_id=request.user.id).exclude(state='basket').prefetch_related(
+            'ordered_items__product_info__product__category',
+            'ordered_items__product_info__product_parameters__parameter').select_related('contact').annotate(
+            total_sum=Sum(F('ordered_items__quantity') * F('ordered_items__product_info__price'))).distinct()
+
+        serializer = OrderSerializer(order)
+        return Response(serializer.data)
+
+
 class RegisterAccount(APIView):
 
     def post(self, request, *args, **kwargs):
-        if {'first_name', 'lat_name', 'email', 'company', 'position'}.issubset(request.data):
+        if {'first_name', 'last_name', 'email', 'company', 'position'}.issubset(request.data):
             errors = {}
             try:
                 validate_password(request.data['password'])
@@ -76,13 +127,14 @@ class RegisterAccount(APIView):
                     user = user_serializer.save()
                     user.set_password(request.data['password'])
                     user.save()
-
-                    # new_user_registered.send
-
+                    new_user_registered.send(sender=self.__class__, user_id=user.id)
                     return JsonResponse({'Status': True})
                 else:
                     return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
         return JsonResponse({'Status': False, 'Errors': 'Не указаны аргументы'})
+
+
+# class ConfirmAccount(APIView)
 
 
 class LoginAccount(APIView):

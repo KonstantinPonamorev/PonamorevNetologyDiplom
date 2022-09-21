@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-r4!=^a93*gx22#==jls=9oq()r1xuh)u8k9_#y5730zuw6p*i1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -132,6 +132,18 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'backend.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_HOST_USER = 'ponamorevnetologydiplom@mail.ru'
+EMAIL_HOST_PASSWORD = 'ZgKWHUqBuawnUVfrLCa4'
+EMAIL_PORT = 2525
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+# SERVER_EMAIL = EMAIL_HOST_USER
+
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',

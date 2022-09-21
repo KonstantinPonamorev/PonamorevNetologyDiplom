@@ -176,7 +176,7 @@ class ProductParameter(models.Model):
 
     class Meta:
         verbose_name = 'Параметр'
-        verbose_name_plural = 'Список параметров'
+        verbose_name_plural = 'Инфо о параметрах'
         constraints = [
             models.UniqueConstraint(fields=['product_info', 'parameter'], name='unique_product_parameter'),
         ]
