@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.dispatch import Signal, receiver
 
+
 from backend.models import ConfirmEmailToken, User
 
 new_user_registered = Signal()

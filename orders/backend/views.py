@@ -139,11 +139,11 @@ class RegisterAccount(APIView):
 
 
 class ConfirmAccount(APIView):
+
     def post(self, request, *args, **kwargs):
         if {'email', 'token'}.issubset(request.data):
             token = ConfirmEmailToken.objects.filter(user__email=request.data['email'],
                                                      key=request.data['token']).first()
-
             if token:
                 token.user.is_active = True
                 token.user.save()

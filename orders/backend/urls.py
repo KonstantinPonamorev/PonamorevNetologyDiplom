@@ -13,11 +13,9 @@ urlpatterns = [
     path('user/details', AccountDetails.as_view(), name='user-details'),
     path('user/login', LoginAccount.as_view(), name='user-login'),
     path('user/contact', ContactView.as_view(), name='user-contact'),
-
     path('categories', CategoryView.as_view(), name='categories'),
     path('shops', ShopView.as_view(), name='shops'),
     path('products', ProductInfoView.as_view(), name='products'),
     path('basket', BasketView.as_view(), name='basket'),
-    path('orders', OrderView.as_view(), name='orders')
-
+    path('orders', OrderView.as_view(), name='orders'),
 ]
