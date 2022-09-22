@@ -8,7 +8,6 @@ from django.db import IntegrityError
 from django.db.models import Sum, F, Q
 from django.http import JsonResponse
 from requests import get
-from django.shortcuts import render
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -16,7 +15,7 @@ from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
 from ujson import loads as load_json
 
-from backend.models import Shop, Category, ProductInfo, Product, Parameter, ProductParameter, User, Order, OrderItem, \
+from backend.models import Shop, Category, ProductInfo, Product, Parameter, ProductParameter, Order, OrderItem, \
     Contact, ConfirmEmailToken
 from backend.serializers import UserSerializer, ShopSerializer, OrderSerializer, CategorySerializer, \
     ProductInfoSerializer, OrderItemSerializer, ContactSerializer
@@ -169,7 +168,6 @@ class AccountDetails(APIView):
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
 
         if 'password' in request.data:
-            errors = {}
             try:
                 validate_password(request.data['password'])
             except Exception as password_error:
