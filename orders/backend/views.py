@@ -19,7 +19,8 @@ from backend.models import Shop, Category, ProductInfo, Product, Parameter, Prod
     Contact, ConfirmEmailToken
 from backend.serializers import UserSerializer, ShopSerializer, OrderSerializer, CategorySerializer, \
     ProductInfoSerializer, OrderItemSerializer, ContactSerializer
-from backend.signals import new_user_registered, new_order
+# from backend.signals import new_user_registered, new_order
+from backend.tasks import new_user_registered_task, new_order_task
 
 
 class PartnerUpdate(APIView):
@@ -130,7 +131,8 @@ class RegisterAccount(APIView):
                     user = user_serializer.save()
                     user.set_password(request.data['password'])
                     user.save()
-                    new_user_registered.send(sender=self.__class__, user_id=user.id)
+                    new_user_registered_task.delay(user_id=user.id)
+                    # new_user_registered.send(sender=self.__class__, user_id=user.id)
                     return JsonResponse({'Status': True})
                 else:
                     return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
@@ -407,7 +409,8 @@ class OrderView(APIView):
                     return JsonResponse({'Status': False, 'Error': 'Wrong arguments'})
                 else:
                     if is_updated:
-                        new_order.send(sender=self.__class__, user_id=request.user.id)
+                        new_order_task.delay(user_id=request.user.id)
+                        # new_order.send(sender=self.__class__, user_id=request.user.id)
                         return JsonResponse({'Status': True})
 
         return JsonResponse({'Status': 'Укажите все аргументы'})
