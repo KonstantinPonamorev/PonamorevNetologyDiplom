@@ -12,6 +12,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from yaml import load as load_yaml, Loader
 from ujson import loads as load_json
 
@@ -23,7 +24,7 @@ from backend.serializers import UserSerializer, ShopSerializer, OrderSerializer,
 from backend.tasks import new_user_registered_task, new_order_task
 
 
-class PartnerUpdate(APIView):
+class PartnerUpdateView(APIView):
 
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -65,7 +66,7 @@ class PartnerUpdate(APIView):
         return JsonResponse({'Status': False, "Errors": 'Не указаны необходимые аргументы'})
 
 
-class PartnerState(APIView):
+class PartnerStateView(APIView):
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -93,7 +94,7 @@ class PartnerState(APIView):
         return JsonResponse({'Status': False, 'Error': 'Need new state'})
 
 
-class PartnerOrders(APIView):
+class PartnerOrdersView(APIView):
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -111,7 +112,7 @@ class PartnerOrders(APIView):
         return Response(serializer.data)
 
 
-class RegisterAccount(APIView):
+class RegisterAccountView(APIView):
 
     def post(self, request, *args, **kwargs):
         if {'first_name', 'last_name', 'email', 'company', 'position'}.issubset(request.data):
@@ -139,7 +140,7 @@ class RegisterAccount(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны аргументы'})
 
 
-class ConfirmAccount(APIView):
+class ConfirmAccountView(APIView):
 
     def post(self, request, *args, **kwargs):
         if {'email', 'token'}.issubset(request.data):
@@ -156,7 +157,7 @@ class ConfirmAccount(APIView):
         return JsonResponse({'Status': False, 'Error': 'enter token and email'})
 
 
-class AccountDetails(APIView):
+class AccountDetailsView(APIView):
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -188,7 +189,7 @@ class AccountDetails(APIView):
             return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
 
 
-class LoginAccount(APIView):
+class LoginAccountView(APIView):
 
     def post(self, request, *args, **kwargs):
         if {'email', 'password'}.issubset(request.data):
@@ -201,21 +202,53 @@ class LoginAccount(APIView):
             return JsonResponse({'Status': False, 'Errors': 'Need more uthenticate arguments'})
 
 
-class CategoryView(ListAPIView):
+# class CategoryView(ListAPIView):
+#
+#     queryset = Category.objects.all()
+#     serializer_class = CategorySerializer
+
+
+class CategoryViewSet(ReadOnlyModelViewSet):
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class ShopView(ListAPIView):
+# class ShopView(ListAPIView):
+#
+#     queryset = Shop.objects.filter(state=True)
+#     serializer_class = ShopSerializer
+
+class ShopViewSet(ReadOnlyModelViewSet):
 
     queryset = Shop.objects.filter(state=True)
     serializer_class = ShopSerializer
 
+# class ProductInfoView(APIView):
+#
+#     def get(self, request, *args, **kwargs):
+#
+#         query = Q(shop__state=True)
+#         shop_id = request.query_params.get('shop_id')
+#         category_id = request.query_params.get('category_id')
+#
+#         if shop_id:
+#             query = query & Q(shop_id=shop_id)
+#         if category_id:
+#             query = query & Q(product__category_id=category_id)
+#
+#         queryset = ProductInfo.objects.filter(query).select_related(
+#             'shop', 'product__category').prefetch_related('product_parameters__parameter').distinct()
+#
+#         serializer = ProductInfoSerializer(queryset, many=True)
+#         return Response(serializer.data)
 
-class ProductInfoView(APIView):
+class ProductInfoViewSet(ModelViewSet):
 
-    def get(self, request, *args, **kwargs):
+    queryset = ProductInfo.objects.all()
+    serializer_class = ProductInfoSerializer
+
+    def product_info(self, request, *args, **kwargs):
 
         query = Q(shop__state=True)
         shop_id = request.query_params.get('shop_id')
@@ -231,6 +264,7 @@ class ProductInfoView(APIView):
 
         serializer = ProductInfoSerializer(queryset, many=True)
         return Response(serializer.data)
+
 
 
 class BasketView(APIView):
