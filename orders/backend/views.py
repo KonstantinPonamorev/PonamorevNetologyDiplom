@@ -238,7 +238,7 @@ class AccountDetailsView(APIView):
                 error_array = []
                 for item in password_error:
                     error_array.append(item)
-                return JsonResponse({'Status': False, 'Errors': {'password': error_array}})
+                return JsonResponse({'Status': False, 'Errors': {'password': error_array}}, status=400)
             else:
                 request.user.set_password(request.data['password'])
 
@@ -247,7 +247,7 @@ class AccountDetailsView(APIView):
             user_serializer.save()
             return JsonResponse({'Status': True})
         else:
-            return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
+            return JsonResponse({'Status': False, 'Errors': user_serializer.errors}, status=400)
 
 
 class LoginAccountView(APIView):
@@ -266,8 +266,8 @@ class LoginAccountView(APIView):
                 if user.is_active:
                     token, _ = Token.objects.get_or_create(user=user)
                     return JsonResponse({'Status': True, 'Token': token.key})
-                return JsonResponse({'Status': False, 'Errors': 'Can"t authenticate'})
-            return JsonResponse({'Status': False, 'Errors': 'Need more uthenticate arguments'})
+                return JsonResponse({'Status': False, 'Errors': 'Can"t authenticate'}, status=401)
+            return JsonResponse({'Status': False, 'Errors': 'Need more uthenticate arguments'}, status=401)
 
 
 # class CategoryView(ListAPIView):
