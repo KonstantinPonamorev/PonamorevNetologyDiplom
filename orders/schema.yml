@@ -1,0 +1,779 @@
+openapi: 3.0.3
+info:
+  title: Orders API
+  version: 1.0.0
+  description: API for buyers and partners to make Orders
+paths:
+  /api/v1/basket:
+    get:
+      operationId: basket_retrieve
+      description: |-
+        Посмотреть корзину методом GET.
+
+        Необходима авторизация от лица покупателяю
+        ---
+
+        parameters:
+            - authorization: token
+              description: your authorization token
+              type: string
+              paramType: headers
+      tags:
+      - basket
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: basket_create
+      description: |-
+        Редактировать корзину методом post.
+
+        Необходимо передать добавляемые товары в формате:
+            [{"product_info": x, "quantity": y}, ...]
+            Где:
+                x - id информации о продукте,
+                y - количество товара
+      tags:
+      - basket
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: basket_update
+      description: |-
+        Редактировать количество товаров в корзине методом PUT.
+
+        Необходимо передать редактируемы товары списком в формате:
+            [ { "id": x, "quantity": y }, ... ] , где:
+                x - id  редактируемого товара,
+                y - какое количество товара добавить
+      tags:
+      - basket
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: basket_destroy
+      description: |-
+        Удалить товары из корзины методом DELETE.
+
+        Необходимо передать id удаляемых товаров через запятую.
+      tags:
+      - basket
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/v1/categories/:
+    get:
+      operationId: categories_list
+      description: Класс для просмотра категорий.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - categories
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+  /api/v1/categories/{id}/:
+    get:
+      operationId: categories_retrieve
+      description: Класс для просмотра категорий.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Категория.
+        required: true
+      tags:
+      - categories
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/orders:
+    get:
+      operationId: orders_retrieve
+      description: |-
+        Получить заказы пользователя методом GET.
+
+        Необходима авторизация от лица покупателя.
+      tags:
+      - orders
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: orders_create
+      description: |-
+        Разместить заказ из корзины методом POST.
+
+        Необходима авторизация от лица покупателя.
+        Необходимо передать id заказа.
+        Заказ должен быть в статусте "basket".
+        Необходимо указать контакты покупателя.
+      tags:
+      - orders
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/partner/orders:
+    get:
+      operationId: partner_orders_retrieve
+      description: |-
+        Получить заказы методом GET.
+
+        Необходима авторизация от лица поставшика.
+        На выходе дает активные заказы текущего поставщика.
+      tags:
+      - partner
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/partner/state:
+    get:
+      operationId: partner_state_retrieve
+      description: |-
+        Узнать статус поставщика методом GET.
+
+        Необходима авторизация от лица поставщика.
+        На выходе показывает текущий статус магазина.
+      tags:
+      - partner
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: partner_state_create
+      description: |-
+        Изменить статус поставщика методом POST.
+
+        Необходима авторизация от лица поставщика.
+        Меняет текущий стату магазина на прием заказов onn\off.
+      tags:
+      - partner
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/partner/update:
+    post:
+      operationId: partner_update_create
+      description: |-
+        Обновление прайса поставщика методом POST.
+
+        Для использования необходима авторизация от лица поставщика.
+        В запросе необходимо указать url файла ".yaml", в котором находится информация для обновления.
+      tags:
+      - partner
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/products/:
+    get:
+      operationId: products_list
+      description: Класс для поиска товаров
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - products
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductInfoList'
+          description: ''
+    post:
+      operationId: products_create
+      description: Класс для поиска товаров
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInfo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductInfo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductInfo'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInfo'
+          description: ''
+  /api/v1/products/{id}/:
+    get:
+      operationId: products_retrieve
+      description: Класс для поиска товаров
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Информация о продукте.
+        required: true
+      tags:
+      - products
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInfo'
+          description: ''
+    put:
+      operationId: products_update
+      description: Класс для поиска товаров
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Информация о продукте.
+        required: true
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInfo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductInfo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductInfo'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInfo'
+          description: ''
+    patch:
+      operationId: products_partial_update
+      description: Класс для поиска товаров
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Информация о продукте.
+        required: true
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductInfo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductInfo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductInfo'
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInfo'
+          description: ''
+    delete:
+      operationId: products_destroy
+      description: Класс для поиска товаров
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Информация о продукте.
+        required: true
+      tags:
+      - products
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/v1/shops/:
+    get:
+      operationId: shops_list
+      description: Класс для просмотра магазинов
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - shops
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShopList'
+          description: ''
+  /api/v1/shops/{id}/:
+    get:
+      operationId: shops_retrieve
+      description: Класс для просмотра магазинов
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Магазин.
+        required: true
+      tags:
+      - shops
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shop'
+          description: ''
+  /api/v1/user/contact:
+    get:
+      operationId: user_contact_retrieve
+      description: |-
+        Получить контакты пользователя методом GET.
+
+        Необходима авторизация от лица пользователя.
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: user_contact_create
+      description: |-
+        Добавить новый контакт методом POST.
+
+        Необходима авторизация от лица пользователя.
+        Необходимо передать обязательные параметры:
+            city - город проживания,
+            street - улица проживания,
+            phone - номер телефона
+        Необязательные параметры:
+            house - дом,
+            structure - корпус,
+            building - строение,
+            apartment - квартира
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: user_contact_update
+      description: |-
+        Редактировать контакты методом PUT.
+
+        Необходима авторизация от лица пользователя.
+        Необходимо передать изменяемые данные и id изменяемого контакта.
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: user_contact_destroy
+      description: |-
+        Удалить контакты методом DELETE.
+
+        Необходима авторизация от лица пользователя.
+        Необходимо передать id удаляемых контактов.
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/v1/user/details:
+    get:
+      operationId: user_details_retrieve
+      description: |-
+        Получить данные методом GET.
+
+        Необходима авторизация от лица покупателя.
+        На выходе дает информацию о пользователе.
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: user_details_create
+      description: |-
+        Редактировать данные методом POST.
+
+        Необходимо передать новые данные для редактирования.
+        Изменяет текущие данные пользователя на новые.
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/user/login:
+    post:
+      operationId: user_login_create
+      description: |-
+        Авторизация пользователя методом POST.
+
+        Необходимо передать верные логин и пароль для авторизации.
+        На выходе дает уникальный token авторизации.
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/user/register:
+    post:
+      operationId: user_register_create
+      description: |-
+        Регистрация нового покупателя методом POST.
+
+        Необходимо передать аргументы:
+            first_name,
+            last_name,
+            email,
+            company,
+            position
+
+        По результату отправляет письмо на указанную электронную почту с токеном для подтверждения.
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/user/register/confirm:
+    post:
+      operationId: user_register_confirm_create
+      description: |-
+        Подтверждение электронной почты методом POST.
+
+        Для подтверждения необходимо передать токен, полученный на электронную почту при регистрации.
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название
+          maxLength: 40
+      required:
+      - id
+      - name
+    PaginatedCategoryList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedProductInfoList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductInfo'
+    PaginatedShopList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Shop'
+    PatchedProductInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        model:
+          type: string
+          title: Модель
+          maxLength: 80
+        product:
+          allOf:
+          - $ref: '#/components/schemas/Product'
+          readOnly: true
+        shop:
+          type: integer
+          title: Магазин
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Количество
+        price:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Цена
+        price_rrc:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+          title: РРЦ
+        product_parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductParameter'
+          readOnly: true
+    Product:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Название
+          maxLength: 80
+        category:
+          type: string
+          readOnly: true
+      required:
+      - category
+      - name
+    ProductInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        model:
+          type: string
+          title: Модель
+          maxLength: 80
+        product:
+          allOf:
+          - $ref: '#/components/schemas/Product'
+          readOnly: true
+        shop:
+          type: integer
+          title: Магазин
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Количество
+        price:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Цена
+        price_rrc:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+          title: РРЦ
+        product_parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductParameter'
+          readOnly: true
+      required:
+      - id
+      - price
+      - product
+      - product_parameters
+      - quantity
+    ProductParameter:
+      type: object
+      properties:
+        parameter:
+          type: string
+          readOnly: true
+        value:
+          type: string
+          title: Значение
+          maxLength: 100
+      required:
+      - parameter
+      - value
+    Shop:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название
+          maxLength: 50
+        state:
+          type: boolean
+          title: Статус получения заказов
+      required:
+      - id
+      - name
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
