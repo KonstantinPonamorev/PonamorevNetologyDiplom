@@ -206,15 +206,15 @@ SITE_ID = 1
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': '923440825448-t5tpeglcag2qra47o4rkco8rfpbacca3.apps.googleusercontent.com',
-            'secret': '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',
+            'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+            'secret': os.getenv('GOOGLE_SECRET'),
             'key': '',
         }
     },
     'vk': {
         'APP': {
-            'client_id': '51436560',
-            'secret': 'VD9rBWwZODmtScd2fncf',
+            'client_id': os.getenv('VK_CLIENT_ID'),
+            'secret': os.getenv('VK_SECRET'),
             'key': '',
         }
     }
