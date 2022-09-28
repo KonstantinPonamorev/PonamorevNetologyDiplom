@@ -7,6 +7,7 @@ from django.core.validators import URLValidator
 from django.db import IntegrityError
 from django.db.models import Sum, F, Q
 from django.http import JsonResponse
+from drf_spectacular.utils import extend_schema
 from requests import get
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
@@ -346,6 +347,7 @@ class ProductInfoViewSet(ModelViewSet):
 
 class BasketView(APIView):
     '''Класс для работы с корзиной пользователя'''
+
 
     def get(self, request, *args, **kwargs):
         '''Посмотреть корзину методом GET.
