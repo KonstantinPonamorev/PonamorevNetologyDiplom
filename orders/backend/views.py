@@ -157,7 +157,7 @@ class RegisterAccountView(APIView):
         По результату отправляет письмо на указанную электронную почту с токеном для подтверждения.
 
         '''
-        if {'first_name', 'last_name', 'email', 'company', 'position'}.issubset(request.data):
+        if {'first_name', 'last_name', 'email', 'company', 'position', 'password'}.issubset(request.data):
             errors = {}
             try:
                 validate_password(request.data['password'])
