@@ -71,7 +71,7 @@ class PartnerUpdateView(APIView):
                                                         parameter_id=parameter_object.id,
                                                         value=value)
                 return JsonResponse({'Status': True})
-        return JsonResponse({'Status': False, "Errors": 'Не указаны необходимые аргументы'})
+        return JsonResponse({'Status': False, "Errors": 'Need more arguments'})
 
 
 class PartnerStateView(APIView):
@@ -179,7 +179,7 @@ class RegisterAccountView(APIView):
                     return JsonResponse({'Status': True})
                 else:
                     return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
-        return JsonResponse({'Status': False, 'Errors': 'Не указаны аргументы'})
+        return JsonResponse({'Status': False, 'Errors': 'Need more register arguments'}, status=200)
 
 
 class ConfirmAccountView(APIView):
@@ -238,7 +238,7 @@ class AccountDetailsView(APIView):
                 error_array = []
                 for item in password_error:
                     error_array.append(item)
-                return JsonResponse({'Status': False, 'Errors': {'password': error_array}}, status=400)
+                return JsonResponse({'Status': False, 'Errors': {'password': error_array}}, status=200)
             else:
                 request.user.set_password(request.data['password'])
 
@@ -247,7 +247,7 @@ class AccountDetailsView(APIView):
             user_serializer.save()
             return JsonResponse({'Status': True})
         else:
-            return JsonResponse({'Status': False, 'Errors': user_serializer.errors}, status=400)
+            return JsonResponse({'Status': False, 'Errors': user_serializer.errors}, status=200)
 
 
 class LoginAccountView(APIView):
@@ -266,8 +266,8 @@ class LoginAccountView(APIView):
                 if user.is_active:
                     token, _ = Token.objects.get_or_create(user=user)
                     return JsonResponse({'Status': True, 'Token': token.key})
-                return JsonResponse({'Status': False, 'Errors': 'Can"t authenticate'}, status=401)
-            return JsonResponse({'Status': False, 'Errors': 'Need more uthenticate arguments'}, status=401)
+                return JsonResponse({'Status': False, 'Errors': 'Can"t authenticate'}, status=200)
+            return JsonResponse({'Status': False, 'Errors': 'Need more uthenticate arguments'}, status=200)
 
 
 # class CategoryView(ListAPIView):
@@ -356,7 +356,7 @@ class BasketView(APIView):
 
         '''
         if not request.user.is_authenticated:
-            return JsonResponse({'Status': False, 'Error': 'Log in required'})
+            return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
 
         basket = Order.objects.filter(
             user_id=request.user.id, state='basket').prefetch_related(
@@ -402,8 +402,8 @@ class BasketView(APIView):
                     else:
                         return JsonResponse({'Status': False, 'Error': serializer.errors})
 
-                return JsonResponse({'Status': True, 'В корзину добавлено': f'{objects_created} товаров'})
-        return JsonResponse({'Status': False, 'Error': 'Не указаны аргументы'})
+                return JsonResponse({'Status': True, 'Add in basket': f'{objects_created} products'})
+        return JsonResponse({'Status': False, 'Error': 'Need more arguments'})
 
     def delete(self, request, *args, **kwargs):
         '''Удалить товары из корзины методом DELETE.
@@ -427,8 +427,8 @@ class BasketView(APIView):
 
             if objects_deleted:
                 deleted_count = OrderItem.objects.filter(query).delete()[0]
-                return JsonResponse({'Status': True, 'Удалено': f'{deleted_count} объектов'})
-            return JsonResponse({'Status': False, 'Error': 'не указаны все аргументы'})
+                return JsonResponse({'Status': True, 'Delete': f'{deleted_count} items'})
+            return JsonResponse({'Status': False, 'Error': 'Need more arguments'})
 
     def put(self, request, *args, **kwargs):
         '''Редактировать количество товаров в корзине методом PUT.
@@ -447,7 +447,7 @@ class BasketView(APIView):
             try:
                 items_dict = load_json(items_string)
             except ValueError:
-                return JsonResponse({'Status': False, "Errors": 'Неверный формат запроса'})
+                return JsonResponse({'Status': False, "Errors": 'Invalid format'})
             else:
                 basket, _ = Order.objects.get_or_create(user_id=request.user.id, state='basket')
                 objects_updated = 0
@@ -455,8 +455,8 @@ class BasketView(APIView):
                     if type(order_item['id']) == int and type(order_item['quantity']) == int:
                         objects_updated += OrderItem.objects.filter(order_id=basket.id, id=order_item['id']).update(
                             quantity=order_item['quantity'])
-                return JsonResponse({'Status': True, 'Обновлено': f'{objects_updated} объектов'})
-        return JsonResponse({'Status': False, 'Error': 'Укажите аргументы'})
+                return JsonResponse({'Status': True, 'Update': f'{objects_updated} items'})
+        return JsonResponse({'Status': False, 'Error': 'Need more arguments'})
 
 
 class ContactView(APIView):
@@ -503,7 +503,7 @@ class ContactView(APIView):
             else:
                 JsonResponse({'Status': False, 'Errors': serializer.errors})
 
-        return JsonResponse({'Status': False, 'Error': 'Введите все аргументы'})
+        return JsonResponse({'Status': False, 'Error': 'Need more arguments'})
 
     def delete(self, request, *args, **kwargs):
         '''Удалить контакты методом DELETE.
@@ -527,8 +527,9 @@ class ContactView(APIView):
 
             if objects_deleted:
                 deleted_count = Contact.objects.filter(query).delete()[0]
-                return JsonResponse({'Status': True, 'Удалено': f'{deleted_count} контактов'})
-            return JsonResponse({'Status': False, 'Error': 'Укажите аргументы'})
+                return JsonResponse({'Status': True, 'Delete': f'{deleted_count} contacts'})
+        return JsonResponse({'Status': False, 'Error': 'Need more arguments'})
+
 
 
     def put(self, request, *args, **kwargs):
@@ -552,7 +553,7 @@ class ContactView(APIView):
                     else:
                         JsonResponse({'Status': False, 'Error': serializer.errors})
 
-        return JsonResponse({'Status': False, 'Error': 'Укажите аргументы'})
+        return JsonResponse({'Status': False, 'Error': 'Need more arguments'})
 
 
 class OrderView(APIView):
@@ -600,4 +601,4 @@ class OrderView(APIView):
                         # new_order.send(sender=self.__class__, user_id=request.user.id)
                         return JsonResponse({'Status': True})
 
-        return JsonResponse({'Status': 'Укажите все аргументы'})
+        return JsonResponse({'Status': 'Need more arguments'})

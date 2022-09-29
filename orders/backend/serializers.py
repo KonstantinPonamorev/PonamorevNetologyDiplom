@@ -60,6 +60,7 @@ class ProductInfoSerializer(serializers.ModelSerializer):
         model = ProductInfo
         fields = ('id', 'model', 'product', 'shop', 'quantity', 'price', 'price_rrc', 'product_parameters')
         read_only_fields = ('id',)
+        ordering = ['-id']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):

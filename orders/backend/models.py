@@ -59,8 +59,8 @@ class User(AbstractUser):
     objects = UserManager()
     USERNAME_FIELD = 'email'
     email = models.EmailField(_('email address'), unique=True)
-    company = models.CharField(verbose_name='Компания', max_length=40, blank=True)
-    position = models.CharField(verbose_name='Должность', max_length=40, blank=True)
+    company = models.CharField(verbose_name='Компания', max_length=50, blank=True)
+    position = models.CharField(verbose_name='Должность', max_length=50, blank=True)
     username_validator = UnicodeUsernameValidator()
     username = models.CharField(
         _('username'),
@@ -152,6 +152,7 @@ class ProductInfo(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['product', 'shop', 'external_id'], name='unique_product_info'),
         ]
+        ordering = ('-id',)
 
 
 class Parameter(models.Model):
@@ -186,13 +187,13 @@ class Contact(models.Model):
     user = models.ForeignKey(User, verbose_name='Пользователь',
                              related_name='contacts', blank=True,
                              on_delete=models.CASCADE)
-    city = models.CharField(max_length=50, verbose_name='Город')
-    street = models.CharField(max_length=50, verbose_name='Улица')
+    city = models.CharField(max_length=60, verbose_name='Город')
+    street = models.CharField(max_length=60, verbose_name='Улица')
     house = models.CharField(max_length=15, verbose_name='Дом', blank=True)
     structure = models.CharField(max_length=15, verbose_name='Корпус', blank=True)
     building = models.CharField(max_length=15, verbose_name='Строение', blank=True)
     apartment = models.CharField(max_length=15, verbose_name='Квартира', blank=True)
-    phone = models.CharField(max_length=20, verbose_name='Телефон')
+    phone = models.CharField(max_length=25, verbose_name='Телефон')
 
     class Meta:
         verbose_name = 'Контакты пользователя'
