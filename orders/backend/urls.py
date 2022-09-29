@@ -8,34 +8,26 @@ from backend.views import PartnerUpdateView, PartnerStateView, PartnerOrdersView
 
 app_name = 'backend'
 
-
 product_info = ProductInfoViewSet.as_view({
     'get': 'product_info'
 })
-
 shop_list = ShopViewSet.as_view({
     'get': 'list'
 })
-
 shop_detail = ShopViewSet.as_view({
     'get': 'retrieve'
 })
-
 category_list = CategoryViewSet.as_view({
     'get': 'list'
 })
-
 category_detail = CategoryViewSet.as_view({
     'get': 'retrieve'
 })
-
-
 
 router = DefaultRouter()
 router.register(r'products', ProductInfoViewSet, basename='product_info')
 router.register(r'shops', ShopViewSet, basename='shop')
 router.register(r'categories', CategoryViewSet, basename='category')
-
 
 urlpatterns = [
     path('partner/update', PartnerUpdateView.as_view(), name='partner-update'),
@@ -53,4 +45,3 @@ urlpatterns = [
     path('orders', OrderView.as_view(), name='orders'),
     path('', include(router.urls))
 ]
-

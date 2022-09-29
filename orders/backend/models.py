@@ -23,6 +23,7 @@ USER_TYPE_CHOICES = (
 
 
 class UserManager(BaseUserManager):
+    '''Миксин для управления пользователями'''
     use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
@@ -43,18 +44,17 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
-
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True')
         if extra_fields.get('is_active') is not True:
             raise ValueError('Superuser must have is_active=True')
-
         return self._create_user(email, password, **extra_fields)
 
 
 class User(AbstractUser):
+    '''Стандартная модель пользователя'''
     REQUIRED_FIELDS = []
     objects = UserManager()
     USERNAME_FIELD = 'email'
@@ -91,6 +91,7 @@ class User(AbstractUser):
 
 
 class Shop(models.Model):
+    '''Модель магазина'''
     name = models.CharField(max_length=50, verbose_name='Название')
     url = models.URLField(verbose_name='Ссылка', null=True, blank=True)
     user = models.OneToOneField(User, verbose_name='Пользователь',
@@ -109,6 +110,7 @@ class Shop(models.Model):
 
 
 class Category(models.Model):
+    '''Модель категории'''
     name = models.CharField(max_length=40, verbose_name='Название')
     shops = models.ManyToManyField(Shop, verbose_name='Магазины', related_name='categories', blank=True)
 
@@ -122,6 +124,7 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    '''Модель товаров'''
     name = models.CharField(max_length=80, verbose_name='Название')
     category = models.ForeignKey(Category, verbose_name='Категория', related_name='products', blank=True,
                                  on_delete=models.CASCADE)
@@ -136,6 +139,7 @@ class Product(models.Model):
 
 
 class ProductInfo(models.Model):
+    '''Модель информации о товарах'''
     model = models.CharField(max_length=80, verbose_name='Модель', blank=True)
     external_id = models.PositiveIntegerField(verbose_name='Внешний ID')
     product = models.ForeignKey(Product, verbose_name='Продукт', related_name='product_infos', blank=True,
@@ -156,6 +160,7 @@ class ProductInfo(models.Model):
 
 
 class Parameter(models.Model):
+    '''Модель параметров'''
     name = models.CharField(max_length=40, verbose_name='Название')
 
     class Meta:
@@ -168,6 +173,7 @@ class Parameter(models.Model):
 
 
 class ProductParameter(models.Model):
+    '''Модель информации о параметрах товара'''
     product_info = models.ForeignKey(ProductInfo, verbose_name='Информация о продукте',
                                      related_name='product_parameters', blank=True,
                                      on_delete=models.CASCADE)
@@ -184,6 +190,7 @@ class ProductParameter(models.Model):
 
 
 class Contact(models.Model):
+    '''Модель контактов'''
     user = models.ForeignKey(User, verbose_name='Пользователь',
                              related_name='contacts', blank=True,
                              on_delete=models.CASCADE)
@@ -204,6 +211,7 @@ class Contact(models.Model):
 
 
 class Order(models.Model):
+    '''Модель заказов'''
     user = models.ForeignKey(User, verbose_name='Пользователь',
                              related_name='orders', blank=True,
                              on_delete=models.CASCADE)
@@ -212,7 +220,6 @@ class Order(models.Model):
     contact = models.ForeignKey(Contact, verbose_name='Контакт',
                                 blank=True, null=True,
                                 on_delete=models.CASCADE)
-
 
     class Meta:
         verbose_name = 'Заказ'
@@ -224,6 +231,7 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
+    '''Модель позиций в заказе'''
     order = models.ForeignKey(Order, verbose_name='Заказ', related_name='ordered_items', blank=True,
                               on_delete=models.CASCADE)
     product_info = models.ForeignKey(ProductInfo, verbose_name='О продукте', related_name='ordered_items',
@@ -239,6 +247,7 @@ class OrderItem(models.Model):
 
 
 class ConfirmEmailToken(models.Model):
+    '''Модель токена подтверждения email'''
     class Meta:
         verbose_name = 'Токен подтверждения email'
         verbose_name_plural = 'Токены подтверждения email'

@@ -39,7 +39,6 @@ class PartnerUpdateView(APIView):
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
         if request.user.type != 'shop':
             return JsonResponse({'Status': False, 'Error': 'Only shops'}, status=403)
-
         url = request.data.get('url')
         if url:
             validate_url = URLValidator()
@@ -84,12 +83,10 @@ class PartnerStateView(APIView):
         На выходе показывает текущий статус магазина.
 
         '''
-
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
         if request.user.type != 'shop':
             return JsonResponse({'Status': False, 'Error': 'For shops only'}, status=403)
-
         shop = request.user.shop
         serializer = ShopSerializer(shop)
         return Response(serializer.data)
@@ -105,7 +102,6 @@ class PartnerStateView(APIView):
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
         if request.user.type != 'shop':
             return JsonResponse({'Status': False, 'Error': 'For shops only'}, status=403)
-
         state = request.data.get('state')
         if state:
             try:
@@ -130,13 +126,11 @@ class PartnerOrdersView(APIView):
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
         if request.user.type != 'shop':
             return JsonResponse({'Status': False, 'Error': 'For shops only'}, status=403)
-
         order = Order.objects.filter(
             ordered_items__product_info__shop__user_id=request.user.id).exclude(state='basket').prefetch_related(
             'ordered_items__product_info__product__category',
             'ordered_items__product_info__product_parameters__parameter').select_related('contact').annotate(
             total_sum=Sum(F('ordered_items__quantity') * F('ordered_items__product_info__price'))).distinct()
-
         serializer = OrderSerializer(order, many=True)
         return Response(serializer.data)
 
@@ -201,7 +195,6 @@ class ConfirmAccountView(APIView):
                 return JsonResponse({'Status': True})
             else:
                 return JsonResponse({'Status': False, 'Error': 'Wrong token or email'})
-
         return JsonResponse({'Status': False, 'Error': 'enter token and email'})
 
 
@@ -217,7 +210,6 @@ class AccountDetailsView(APIView):
         '''
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
-
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
@@ -230,7 +222,6 @@ class AccountDetailsView(APIView):
         '''
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
-
         if 'password' in request.data:
             try:
                 validate_password(request.data['password'])
@@ -288,30 +279,29 @@ class CategoryViewSet(ReadOnlyModelViewSet):
 #     queryset = Shop.objects.filter(state=True)
 #     serializer_class = ShopSerializer
 
+
 class ShopViewSet(ReadOnlyModelViewSet):
     '''Класс для просмотра магазинов'''
 
     queryset = Shop.objects.filter(state=True)
     serializer_class = ShopSerializer
 
+
 # class ProductInfoView(APIView):
 #
 #     def get(self, request, *args, **kwargs):
-#
 #         query = Q(shop__state=True)
 #         shop_id = request.query_params.get('shop_id')
 #         category_id = request.query_params.get('category_id')
-#
 #         if shop_id:
 #             query = query & Q(shop_id=shop_id)
 #         if category_id:
 #             query = query & Q(product__category_id=category_id)
-#
 #         queryset = ProductInfo.objects.filter(query).select_related(
 #             'shop', 'product__category').prefetch_related('product_parameters__parameter').distinct()
-#
 #         serializer = ProductInfoSerializer(queryset, many=True)
 #         return Response(serializer.data)
+
 
 class ProductInfoViewSet(ModelViewSet):
     '''Класс для поиска товаров'''
@@ -331,23 +321,18 @@ class ProductInfoViewSet(ModelViewSet):
         query = Q(shop__state=True)
         shop_id = request.query_params.get('shop_id')
         category_id = request.query_params.get('category_id')
-
         if shop_id:
             query = query & Q(shop_id=shop_id)
         if category_id:
             query = query & Q(product__category_id=category_id)
-
         queryset = ProductInfo.objects.filter(query).select_related(
             'shop', 'product__category').prefetch_related('product_parameters__parameter').distinct()
-
         serializer = ProductInfoSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
-
 class BasketView(APIView):
     '''Класс для работы с корзиной пользователя'''
-
 
     def get(self, request, *args, **kwargs):
         '''Посмотреть корзину методом GET.
@@ -357,13 +342,11 @@ class BasketView(APIView):
         '''
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
-
         basket = Order.objects.filter(
             user_id=request.user.id, state='basket').prefetch_related(
             'ordered_items__product_info__product__category',
             'ordered_items__product_info__product_parameters__parameter').annotate(
             total_sum=Sum(F('ordered_items__quantity') * F('ordered_items__product_info__price'))).distinct()
-
         serializer = OrderSerializer(basket, many=True)
         return Response(serializer.data)
 
@@ -379,7 +362,6 @@ class BasketView(APIView):
         '''
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
-
         items_string = request.data.get('items')
         if items_string:
             try:
@@ -413,7 +395,6 @@ class BasketView(APIView):
         '''
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
-
         items_string = request.data.get('items')
         if items_string:
             items_list = items_string.split(',')
@@ -424,7 +405,6 @@ class BasketView(APIView):
                 if order_item_id.isdigit():
                     query = query | Q(order_id=basket.id, id=order_item_id)
                     objects_deleted = True
-
             if objects_deleted:
                 deleted_count = OrderItem.objects.filter(query).delete()[0]
                 return JsonResponse({'Status': True, 'Delete': f'{deleted_count} items'})
@@ -441,7 +421,6 @@ class BasketView(APIView):
         '''
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
-
         items_string = request.data.get('items')
         if items_string:
             try:
@@ -491,18 +470,15 @@ class ContactView(APIView):
         '''
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
-
         if {'city', 'street', 'phone'}.issubset(request.data):
             request.data._mutable = True
             request.data.update({'user': request.user.id})
             serializer = ContactSerializer(data=request.data)
-
             if serializer.is_valid():
                 serializer.save()
                 return JsonResponse({'Status': True})
             else:
                 JsonResponse({'Status': False, 'Errors': serializer.errors})
-
         return JsonResponse({'Status': False, 'Error': 'Need more arguments'})
 
     def delete(self, request, *args, **kwargs):
@@ -514,7 +490,6 @@ class ContactView(APIView):
         '''
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
-
         items_string = request.data.get('items')
         if items_string:
             items_list = items_string.split(',')
@@ -524,13 +499,10 @@ class ContactView(APIView):
                 if contact_id.isdigit():
                     query = query | Q(id=contact_id, user_id=request.user.id)
                     objects_deleted = True
-
             if objects_deleted:
                 deleted_count = Contact.objects.filter(query).delete()[0]
                 return JsonResponse({'Status': True, 'Delete': f'{deleted_count} contacts'})
         return JsonResponse({'Status': False, 'Error': 'Need more arguments'})
-
-
 
     def put(self, request, *args, **kwargs):
         '''Редактировать контакты методом PUT.
@@ -541,7 +513,6 @@ class ContactView(APIView):
         '''
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
-
         if 'id' in request.data:
             if request.data['id'].isdigit():
                 contact = Contact.objects.filter(id=request.data['id'], user_id=request.user.id).first()
@@ -552,7 +523,6 @@ class ContactView(APIView):
                         return JsonResponse({'Status': True})
                     else:
                         JsonResponse({'Status': False, 'Error': serializer.errors})
-
         return JsonResponse({'Status': False, 'Error': 'Need more arguments'})
 
 
@@ -585,7 +555,6 @@ class OrderView(APIView):
         '''
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
-
         if {'id', 'contact'}.issubset(request.data):
             if request.data['id'].isdigit():
                 try:
@@ -600,5 +569,4 @@ class OrderView(APIView):
                         new_order_task.delay(user_id=request.user.id)
                         # new_order.send(sender=self.__class__, user_id=request.user.id)
                         return JsonResponse({'Status': True})
-
         return JsonResponse({'Status': 'Need more arguments'})
