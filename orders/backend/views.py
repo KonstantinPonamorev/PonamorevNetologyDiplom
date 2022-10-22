@@ -7,8 +7,9 @@ from django.core.validators import URLValidator
 from django.db import IntegrityError
 from django.db.models import Sum, F, Q
 from django.http import JsonResponse
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from requests import get
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -334,6 +335,9 @@ class ProductInfoViewSet(ModelViewSet):
 class BasketView(APIView):
     '''Класс для работы с корзиной пользователя'''
 
+    @extend_schema(
+        responses=OrderSerializer,
+    )
     def get(self, request, *args, **kwargs):
         '''Посмотреть корзину методом GET.
 
@@ -350,6 +354,14 @@ class BasketView(APIView):
         serializer = OrderSerializer(basket, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='items', description='All added in basket items like '
+                                                       '"[{"product_info": 25, "quantity": 13},...]"',
+                             required=True, type=str)
+        ],
+        responses=OrderSerializer,
+    )
     def post(self, request, *args, **kwargs):
         '''Редактировать корзину методом post.
 

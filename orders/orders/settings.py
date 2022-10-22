@@ -173,15 +173,25 @@ REST_FRAMEWORK = {
 
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 
-    'DEFAULT_THROTTLE_CLASSES': [
+    # 'DEFAULT_THROTTLE_CLASSES': [
+    #     'rest_framework.throttling.AnonRateThrottle',
+    #     'rest_framework.throttling.UserRateThrottle',
+    # ],
+    # 'DEFAULT_THROTTLE_RATES': {
+    #     'anon': '20/minute',
+    #     'user': '120/minute'
+    # }
+}
+
+if not bool(os.getenv('TEST')):
+    REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle',
     ],
-    'DEFAULT_THROTTLE_RATES': {
+    REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
         'anon': '20/minute',
         'user': '120/minute'
     }
-}
 
 CELERY_BROKER_URL = "redis://localhost:6378"
 CELERY_RESULT_BACKEND = "redis://localhost:6378"
@@ -194,6 +204,7 @@ SPECTACULAR_SETTINGS = {
     'SWAGGER_UI_DIST': 'SIDECAR',  
     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
+    'AUTHENTICATION_WHITELIST': ['rest_framework.authentication.TokenAuthentication',],
 }
 
 AUTHENTICATION_BACKEND = [
